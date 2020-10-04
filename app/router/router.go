@@ -15,10 +15,18 @@ func Start() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	apiRouter := r.Group("/api")
-	apiRouter.POST("/token",api.GetAuth)
+	apiRouter.POST("/token", api.GetAuth)
 	apiRouter.Use(middleware.AUTH())
 	{
-		apiRouter.GET("/user",api.GetUserById)
+		// 获取当前登录用户信息
+		apiRouter.GET("/mine", api.MineInfo)
+		userRouter := apiRouter.Group("/user")
+		{
+			userRouter.GET("/show/:id", api.GetUserById)
+			userRouter.GET("/list", api.GetUserPage)
+			userRouter.POST("/add", api.AddUser)
+		}
+
 	}
 	return r
 }
@@ -26,6 +34,6 @@ func Start() *gin.Engine {
 func init() {
 	gin.SetMode(util.ServerSetting.RunMode)
 	r := Start()
-	addr := fmt.Sprintf(":%d",util.ServerSetting.HttpPort)
+	addr := fmt.Sprintf(":%d", util.ServerSetting.HttpPort)
 	r.Run(addr)
 }

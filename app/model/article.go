@@ -43,7 +43,7 @@ func (m *Article) GetById(id int) (data *Channel, err error) {
 }
 
 // 分页数据
-func (m *Article) GetPage(pageNum, pageSize int, maps interface{}) (data []*Channel, err error) {
+func (m *Article) GetPage(pageNum, pageSize int, maps interface{}) (data []*Article, err error) {
 	err = db.Model(m).Where(maps).Offset(pageNum).Limit(pageSize).Find(&data).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err

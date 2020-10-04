@@ -11,15 +11,15 @@ var jwtSecret []byte
 type Claims struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`
-	Role 	int `json:"role"`
+	Role     int    `json:"role"`
 	jwt.StandardClaims
 }
 
 // 生成token
-func GenerateToken( id int, username string, role int) (string, error) {
+func GenerateToken(id int, username string, role int) (string, error) {
 	nowTime := time.Now()
 	//ExpireTime
-	expireTime := nowTime.Add(3 * time.Hour)
+	expireTime := nowTime.Add(time.Minute * time.Duration(AppSetting.ExpireTime))
 
 	claims := Claims{
 		id,

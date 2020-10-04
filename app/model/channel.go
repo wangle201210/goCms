@@ -25,6 +25,7 @@ var ChannelType = []string{
 	"article",
 	"linker",
 }
+
 // 增
 func (m *Channel) Add() (err error) {
 	return db.Create(m).Error
@@ -79,6 +80,3 @@ func (m *Channel) Exist(exist bool, err error) {
 	}
 	return
 }
-
-
-

@@ -8,11 +8,12 @@ import (
 )
 
 type App struct {
-	PageSize	int
-	ExpireTime	int
-	Name        string
-	Md5String	string
-	JwtSecret	string
+	PageSize   int
+	ExpireTime int
+	Name       string
+	Md5String  string
+	JwtSecret  string
+	TimeFormat string
 }
 
 var AppSetting = &App{}
@@ -34,7 +35,6 @@ type Database struct {
 	Host        string
 	Name        string
 	TablePrefix string
-
 }
 
 var DatabaseSetting = &Database{}
