@@ -2,9 +2,9 @@ package model
 
 import (
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/astaxie/beego/pkg/infrastructure/logs"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
@@ -12,10 +12,10 @@ import (
 )
 
 type Base struct {
-	ID        int `json:"id" gorm:"primary_key"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at" sql:"index"`
+	ID        int        `json:"id" gorm:"primary_key"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"-" sql:"index"`
 }
 
 var db *gorm.DB
@@ -31,7 +31,7 @@ func init() {
 		util.DatabaseSetting.Name))
 
 	if err != nil {
-		log.Fatalf("model.Setup err: %v", err)
+		logs.Error("connect database err: %v", err)
 	}
 	// 加上表前缀
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {

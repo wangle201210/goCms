@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -10,44 +11,64 @@ import (
 )
 
 type Auth struct {
-	Name string `json:"name" from:"name"`
+	Name     string `json:"name" from:"name"`
 	Password string `json:"password" from:"password"`
-	Role int `json:"role" from:"role"`
+	Role     int    `json:"role" from:"role"`
 }
 
 func GetAuth(c *gin.Context) {
 	g := util.Gin{C: c}
 	auth := Auth{}
 	if err := c.ShouldBind(&auth); err != nil {
-		g.Response(http.StatusBadRequest,util.INVALID_PARAMS,nil)
+		g.Response(http.StatusBadRequest, util.INVALID_PARAMS, nil)
 		return
 	}
 	u := model.User{Name: auth.Name}
 	if err := u.GetByName(); err != nil {
 		// 用户不存在
-		g.Response(http.StatusBadRequest,util.ERROR_AUTH_NOUSER,nil)
+		g.Response(http.StatusBadRequest, util.ERROR_AUTH_NOUSER, nil)
 		return
 	}
 	// 用户存在则验证密码
 	if util.EncodeMD5(auth.Password) != u.Password {
-		g.Response(http.StatusBadRequest,util.ERROR_AUTH_PASSWORD,nil)
+		g.Response(http.StatusBadRequest, util.ERROR_AUTH_PASSWORD, nil)
 		return
 	}
 	token, err := util.GenerateToken(u.ID, u.Name, u.Role)
 	if err != nil {
-		g.Response(http.StatusBadRequest,util.ERROR_AUTH_TOKEN,nil)
+		g.Response(http.StatusBadRequest, util.ERROR_AUTH_TOKEN, nil)
 		return
 	}
-	g.Response(http.StatusOK,util.SUCCESS, map[string]string{
-		"token": token,
+
+	// 上面生成正常，这里解析就一定正常
+	parseToken, _ := util.ParseToken(token)
+	expiresAt := time.Unix(parseToken.ExpiresAt, 0)
+	g.Response(http.StatusOK, util.SUCCESS, gin.H{
+		"token":     token,
+		"expiresAt": expiresAt.Format(util.AppSetting.TimeFormat),
 	})
 }
 
+func MineInfo(c *gin.Context) {
+	g := util.Gin{C: c}
+	u := &model.User{}
+	mine := Mine(c)
+	u.ID = mine.Id
+	if err := u.GetById(); err != nil {
+		g.Response(http.StatusBadRequest, util.ERROR_DATA_NOT_EXIST, err.Error())
+		return
+	}
+	g.Response(http.StatusOK, util.SUCCESS, u)
+	return
+}
+
 func Mine(c *gin.Context) (info *util.Claims) {
-	g := util.Gin{C:c}
-	userInfo,exist := c.Get("userInfo")
+	g := util.Gin{C: c}
+	userInfo, exist := c.Get("userInfo")
 	if !exist {
-		g.Response(http.StatusUnauthorized,util.ERROR_AUTH_CHECK_TOKEN_FAIL,util.ErrMsg(util.ERROR_AUTH_CHECK_TOKEN_FAIL))
+		g.Response(http.StatusUnauthorized, util.ERROR_AUTH_CHECK_TOKEN_FAIL, util.ErrMsg(util.ERROR_AUTH_CHECK_TOKEN_FAIL))
+		c.Abort()
+		return
 	}
 	info = userInfo.(*util.Claims)
 	return

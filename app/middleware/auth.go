@@ -12,8 +12,13 @@ import (
 // 用户登录验证的中间键
 func AUTH() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		g := util.Gin{C: c}
 		code := util.SUCCESS
 		token := c.GetHeader("Authorization")
+		// Bearer
+		if len(token) <= 7 {
+			g.Response(http.StatusUnauthorized, util.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
+		}
 		userInfo, err := util.ParseToken(token[7:])
 		if err != nil {
 			switch err {
@@ -26,15 +31,15 @@ func AUTH() gin.HandlerFunc {
 			}
 		}
 		if code != util.SUCCESS {
-			c.JSON(http.StatusUnauthorized,gin.H{
-				"code":code,
-				"msg": util.ErrMsg(code),
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code": code,
+				"msg":  util.ErrMsg(code),
 				"data": userInfo,
 			})
 			c.Abort()
 			return
 		}
-		c.Set("userInfo",userInfo)
+		c.Set("userInfo", userInfo)
 		//fmt.Println(userInfo)
 		c.Next()
 	}

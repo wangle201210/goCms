@@ -1,7 +1,10 @@
 package model
 
 import (
+	"errors"
+
 	"github.com/astaxie/beego/pkg/infrastructure/logs"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 
 	"github.com/wangle201210/goCms/app/util"
@@ -10,8 +13,8 @@ import (
 type User struct {
 	Base
 
-	Name     string `json:"name"`
-	Password string `json:"-"`
+	Name     string `json:"name" gorm:"not null;unique"` // 非空且唯一
+	Password string `json:"password"`
 	Role     int    `json:"role"`
 	Email    string `json:"email"`
 }
@@ -20,8 +23,52 @@ var RoleList = []string{
 	"unKnown",
 	"admin",
 }
+
+// 获取路由中允许被查询的字段
+// todo 研究下为什么 map[string]interface{} 不能换成gin.H
+func (m *User) GetQuery(c *gin.Context) (qm map[string]interface{}) {
+	query := []string{
+		"id",
+		"name",
+		"role",
+		"email",
+	}
+	res := make(map[string]interface{})
+	for _, q := range query {
+		if v, e := c.GetQuery(q); e {
+			res[q] = v
+		}
+	}
+	return res
+}
+
+// 获取json中允许被修改（新增）的字段
+func (m *User) GetPost(c *gin.Context) (pm gin.H) {
+	post := []string{
+		"name",
+		"role",
+		"email",
+		"password",
+	}
+	res := make(gin.H)
+	for _, q := range post {
+		if v, e := c.GetPostForm(q); e {
+			res[q] = v
+		}
+	}
+	return res
+}
+
 // 增
+// todo name 唯一性
 func (m *User) Add() (err error) {
+	if err = m.GetByName(); err != nil {
+		return
+	} else if m.ID > 0 {
+		err = errors.New(util.ErrMsg(util.ERROR_USER_NAME_USED))
+		return
+	}
+
 	return db.Create(m).Error
 }
 
@@ -40,7 +87,7 @@ func (m *User) Edit(id int, data interface{}) (err error) {
 // 通过id查找数据
 func (m *User) GetById() (err error) {
 	err = db.Model(m).Where("id = ? and deleted_at is null", m.ID).First(&m).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil {
 		return err
 	}
 	return nil
@@ -49,15 +96,15 @@ func (m *User) GetById() (err error) {
 // 通过name查找数据
 func (m *User) GetByName() (err error) {
 	err = db.Model(m).Where("name = ? and deleted_at is null", m.Name).First(&m).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
 // 分页数据
-func (m *User) GetPage(pageNum, pageSize int, maps interface{}) (data []*Channel, err error) {
-	err = db.Model(m).Where(maps).Offset(pageNum).Limit(pageSize).Find(&data).Error
+func (m *User) GetPage(pageNum, maps interface{}) (data []*User, err error) {
+	err = db.Model(m).Where(maps).Offset(pageNum).Limit(util.AppSetting.PageSize).Find(&data).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
