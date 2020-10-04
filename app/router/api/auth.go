@@ -1,0 +1,54 @@
+package api
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/wangle201210/goCms/app/model"
+	"github.com/wangle201210/goCms/app/util"
+)
+
+type Auth struct {
+	Name string `json:"name" from:"name"`
+	Password string `json:"password" from:"password"`
+	Role int `json:"role" from:"role"`
+}
+
+func GetAuth(c *gin.Context) {
+	g := util.Gin{C: c}
+	auth := Auth{}
+	if err := c.ShouldBind(&auth); err != nil {
+		g.Response(http.StatusBadRequest,util.INVALID_PARAMS,nil)
+		return
+	}
+	u := model.User{Name: auth.Name}
+	if err := u.GetByName(); err != nil {
+		// 用户不存在
+		g.Response(http.StatusBadRequest,util.ERROR_AUTH_NOUSER,nil)
+		return
+	}
+	// 用户存在则验证密码
+	if util.EncodeMD5(auth.Password) != u.Password {
+		g.Response(http.StatusBadRequest,util.ERROR_AUTH_PASSWORD,nil)
+		return
+	}
+	token, err := util.GenerateToken(u.ID, u.Name, u.Role)
+	if err != nil {
+		g.Response(http.StatusBadRequest,util.ERROR_AUTH_TOKEN,nil)
+		return
+	}
+	g.Response(http.StatusOK,util.SUCCESS, map[string]string{
+		"token": token,
+	})
+}
+
+func Mine(c *gin.Context) (info *util.Claims) {
+	g := util.Gin{C:c}
+	userInfo,exist := c.Get("userInfo")
+	if !exist {
+		g.Response(http.StatusUnauthorized,util.ERROR_AUTH_CHECK_TOKEN_FAIL,util.ErrMsg(util.ERROR_AUTH_CHECK_TOKEN_FAIL))
+	}
+	info = userInfo.(*util.Claims)
+	return
+}
