@@ -52,7 +52,7 @@ func GetAuth(c *gin.Context) {
 func MineInfo(c *gin.Context) {
 	g := util.Gin{C: c}
 	u := &model.User{}
-	mine := Mine(c)
+	mine := util.Mine(c)
 	u.ID = mine.Id
 	if err := u.GetById(); err != nil {
 		g.Response(http.StatusBadRequest, util.ERROR_DATA_NOT_EXIST, err.Error())
@@ -62,14 +62,3 @@ func MineInfo(c *gin.Context) {
 	return
 }
 
-func Mine(c *gin.Context) (info *util.Claims) {
-	g := util.Gin{C: c}
-	userInfo, exist := c.Get("userInfo")
-	if !exist {
-		g.Response(http.StatusUnauthorized, util.ERROR_AUTH_CHECK_TOKEN_FAIL, util.ErrMsg(util.ERROR_AUTH_CHECK_TOKEN_FAIL))
-		c.Abort()
-		return
-	}
-	info = userInfo.(*util.Claims)
-	return
-}

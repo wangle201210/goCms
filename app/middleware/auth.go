@@ -18,6 +18,8 @@ func AUTH() gin.HandlerFunc {
 		// Bearer
 		if len(token) <= 7 {
 			g.Response(http.StatusUnauthorized, util.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
+			c.Abort()
+			return
 		}
 		userInfo, err := util.ParseToken(token[7:])
 		if err != nil {

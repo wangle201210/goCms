@@ -13,7 +13,7 @@ type Article struct {
 	Pic         string `json:"pic"`
 	Count       string `json:"count"`
 
-	Channel Channel
+	Channel Channel `json:"channel" gorm:"-"`
 }
 
 // 增

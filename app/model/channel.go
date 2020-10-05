@@ -1,11 +1,18 @@
 package model
 
-import "github.com/jinzhu/gorm"
+import (
+	"errors"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+
+	"github.com/wangle201210/goCms/app/util"
+)
 
 type Channel struct {
 	Base
 
-	Title       string `json:"title"`
+	Title       string `json:"title" gorm:"unique"`
 	Keyword     string `json:"keyword"`
 	Description string `json:"description"`
 	Type        string `json:"type"`
@@ -19,15 +26,46 @@ type Channel struct {
 	Ordering    int    `json:"ordering"`
 	Count       int    `json:"count"`
 	Style       string `json:"style"`
+
+	Children []*Channel `json:"children" gorm: "-"'`
 }
 
 var ChannelType = []string{
 	"article",
 	"linker",
+	"list",
+}
+
+// 获取路由中允许被查询的字段
+// todo 想办法通过 Channel 反射得到字段列表
+func (m *Channel) GetQuery(c *gin.Context) (qm map[string]interface{}) {
+	query := []string{
+		"id",
+		"title",
+		"keyword",
+		"type",
+		"parent_id",
+		"show",
+	}
+	res := make(map[string]interface{})
+	for _, q := range query {
+		if v, e := c.GetQuery(q); e {
+			res[q] = v
+		}
+	}
+	return res
 }
 
 // 增
+// todo title 唯一性
 func (m *Channel) Add() (err error) {
+	if err = m.GetByTitle(); err != nil {
+		return
+	} else if m.ID > 0 {
+		err = errors.New(util.ErrMsg(util.ERROR_CHANNEL_TITLE_USED))
+		return
+	}
+
 	return db.Create(m).Error
 }
 
@@ -44,17 +82,26 @@ func (m *Channel) Edit(id int, data interface{}) (err error) {
 }
 
 // 通过id查找数据
-func (m *Channel) GetById(id int) (data *Channel, err error) {
-	err = db.Model(m).Where("id = ? and deleted_at is null", id).First(&data).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
+func (m *Channel) GetById() (err error) {
+	err = db.Model(m).Where("id = ? and deleted_at is null", m.ID).First(&m).Error
+	if err != nil {
+		return err
 	}
-	return
+	return nil
+}
+
+// 通过name查找数据
+func (m *Channel) GetByTitle() (err error) {
+	err = db.Model(m).Where("title = ? and deleted_at is null", m.Title).First(&m).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	return nil
 }
 
 // 分页数据
-func (m *Channel) GetPage(pageNum, pageSize int, maps interface{}) (data []*Channel, err error) {
-	err = db.Model(m).Where(maps).Offset(pageNum).Limit(pageSize).Find(&data).Error
+func (m *Channel) GetPage(pageNum, maps interface{}) (data []*Channel, err error) {
+	err = db.Model(m).Where(maps).Offset(pageNum).Limit(util.AppSetting.PageSize).Find(&data).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -79,4 +126,39 @@ func (m *Channel) Exist(exist bool, err error) {
 		exist = true
 	}
 	return
+}
+
+// 获取全部频道
+func (m *Channel) GetAll(maps ...interface{}) (data []*Channel, err error) {
+	if len(maps) > 0 {
+		err = db.Model(m).Where(maps[0]).Find(&data).Error
+	} else {
+		err = db.Model(m).Find(&data).Error
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return
+}
+
+func (m *Channel) MakeTree(data []*Channel, id, deep int) (res []*Channel, err error) {
+	for _, v := range data {
+		if v.ParentId != id {
+			if p, e := m.findP(data, v.ParentId); e {
+				p.Children = append(p.Children,v)
+			}
+		} else {
+			res = append(res,v)
+		}
+	}
+	return
+}
+
+func  (m *Channel) findP(data []*Channel, id int) (*Channel, bool) {
+	for _, i2 := range data {
+		if i2.ID == id {
+			return i2, true
+		}
+	}
+	return nil,false
 }
