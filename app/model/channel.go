@@ -27,7 +27,7 @@ type Channel struct {
 	Count       int    `json:"count"`
 	Style       string `json:"style"`
 
-	Children []*Channel `json:"children" gorm: "-"'`
+	Children []*Channel `json:"children" gorm:"-"`
 }
 
 var ChannelType = []string{
@@ -117,7 +117,7 @@ func (m *Channel) GetCount(maps interface{}) (count int, err error) {
 }
 
 // 判断某条数据是否存在
-func (m *Channel) Exist(exist bool, err error) {
+func (m *Channel) Exist() (exist bool, err error) {
 	err = db.Select("id").Where("id = ? AND deleted_at is null", m.ID).First(m).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return

@@ -20,6 +20,7 @@ func Start() *gin.Engine {
 	{
 		// 获取当前登录用户信息
 		apiRouter.GET("/mine", api.MineInfo)
+
 		// gin 的路由没有覆盖机制，所以只能把路由加长
 		// user	相关路由
 		userApi := apiRouter.Group("/user")
@@ -30,6 +31,7 @@ func Start() *gin.Engine {
 			userApi.GET("/list", api.GetUserPage) // 列表
 			userApi.GET("/one/:id", api.GetUserById) // id查
 		}
+
 		// 栏目相关
 		channelApi := apiRouter.Group("/channel")
 		{
@@ -41,6 +43,45 @@ func Start() *gin.Engine {
 			channelApi.GET("/one/:id", api.GetChannelById)
 		}
 
+		// 文章相关
+		articleApi := apiRouter.Group("/article")
+		{
+			articleApi.POST("/add", api.AddArticle)
+			articleApi.DELETE("/delete/:id", api.DeleteArticle)
+			articleApi.PUT("/edit/:id", api.EditArticle)
+			articleApi.GET("/list", api.GetArticlePage)
+			articleApi.GET("/one/:id", api.GetArticleById)
+		}
+
+		// 新闻列表相关
+		listApi := apiRouter.Group("/list")
+		{
+			listApi.POST("/add", api.AddList)
+			listApi.DELETE("/delete/:id", api.DeleteList)
+			listApi.PUT("/edit/:id", api.EditList)
+			listApi.GET("/list", api.GetListPage)
+			listApi.GET("/one/:id", api.GetListById)
+		}
+
+		// 友情链接相关
+		linkerApi := apiRouter.Group("/linker")
+		{
+			linkerApi.POST("/add", api.AddLinker)
+			linkerApi.DELETE("/delete/:id", api.DeleteLinker)
+			linkerApi.PUT("/edit/:id", api.EditLinker)
+			linkerApi.GET("/list", api.GetLinkerPage)
+			linkerApi.GET("/one/:id", api.GetLinkerById)
+		}
+
+		// 相册相关
+		albumApi := apiRouter.Group("/album")
+		{
+			albumApi.POST("/add", api.AddAlbum)
+			albumApi.DELETE("/delete/:id", api.DeleteAlbum)
+			albumApi.PUT("/edit/:id", api.EditAlbum)
+			albumApi.GET("/list", api.GetAlbumPage)
+			albumApi.GET("/one/:id", api.GetAlbumById)
+		}
 	}
 	return r
 }

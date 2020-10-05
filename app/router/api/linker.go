@@ -11,25 +11,24 @@ import (
 )
 
 // 增
-func AddUser(c *gin.Context) {
+func AddLinker(c *gin.Context) {
 	g := util.Gin{C: c}
-	u := &model.User{}
-	if err := c.ShouldBind(&u); err != nil {
+	m := &model.Linker{}
+	if err := c.ShouldBind(m); err != nil {
 		g.Response(http.StatusBadRequest, util.INVALID_PARAMS, err.Error())
 		return
 	}
-	u.Password = util.EncodeMD5(u.Password)
-	if err := u.Add(); err != nil {
+	if err := m.Add(); err != nil {
 		g.Response(http.StatusBadRequest, util.ERROR_DATA_ADD, err.Error())
 		return
 	}
-	g.Response(http.StatusOK, util.SUCCESS, u)
+	g.Response(http.StatusOK, util.SUCCESS, nil)
 }
 
 // 删
-func DeleteUser(c *gin.Context)  {
-	u := &model.User{}
+func DeleteLinker(c *gin.Context)  {
 	g := util.Gin{C: c}
+	m := &model.Linker{}
 	if !util.IsAdmin(c) {
 		g.Response(http.StatusBadRequest, util.ERROR_AUTH_PERMISSION,nil)
 		return
@@ -40,8 +39,8 @@ func DeleteUser(c *gin.Context)  {
 		g.Response(http.StatusBadRequest, util.INVALID_PARAMS,"id 必须为数字")
 		return
 	}
-	u.ID = id
-	if err := u.Delete(); err != nil {
+	m.ID = id
+	if err := m.Delete(); err != nil {
 		g.Response(http.StatusBadRequest, util.ERROR_DATA_DELETE,err.Error())
 		return
 	}
@@ -49,43 +48,43 @@ func DeleteUser(c *gin.Context)  {
 }
 
 // 改
-// todo 修改role时额外验证
-func EditUser(c *gin.Context)  {
+func EditLinker(c *gin.Context)  {
+	m := &model.Linker{}
 	g := util.Gin{C: c}
 	s := c.Param("id")
 	id, _ := strconv.Atoi(s)
-	u := &model.User{}
-	if err := c.ShouldBind(u); err != nil {
+	if err := c.ShouldBind(m); err != nil {
 		g.Response(http.StatusBadRequest,util.INVALID_PARAMS,err.Error())
 		return
 	}
-	u.ID = id
-	if err := u.Edit(u.ID, u); err != nil {
+	m.ID = id
+	if err := m.Edit(m.ID, m); err != nil {
 		g.Response(http.StatusBadRequest,util.ERROR_DATA_EDIT,err.Error())
 		return
 	}
 	g.Response(http.StatusOK,util.SUCCESS,nil)
 }
 
-func GetUserById(c *gin.Context) {
+func GetLinkerById(c *gin.Context) {
+	m := &model.Linker{}
 	g := util.Gin{C: c}
 	s := c.Param("id")
 	id, _ := strconv.Atoi(s)
-	u := &model.User{}
-	u.ID = id
-	if err := u.GetById(); err != nil {
+	m.ID = id
+	if err := m.GetById(); err != nil {
 		g.Response(http.StatusBadRequest, util.ERROR_DATA_NOT_EXIST, nil)
 		return
 	}
-	g.Response(http.StatusOK, util.SUCCESS, u)
+	g.Response(http.StatusOK, util.SUCCESS, m)
 }
 
-func GetUserPage(c *gin.Context) {
+func GetLinkerPage(c *gin.Context) {
 	var (
 		page int
 		err  error
 		g    util.Gin
 	)
+	m := &model.Linker{}
 	g.C = c
 	pageNum, exist := c.GetQuery("pageNum")
 
@@ -98,13 +97,12 @@ func GetUserPage(c *gin.Context) {
 		return
 	}
 	start := util.GetPageStart(page)
-	user := &model.User{}
-	getPage, err := user.GetPage(start, user.GetQuery(c))
+	getPage, err := m.GetPage(start, m.GetQuery(c))
 	if err != nil {
 		g.Response(http.StatusBadRequest, util.INVALID_PARAMS, err.Error())
 		return
 	}
-	total, err := user.GetCount(user.GetQuery(c))
+	total, err := m.GetCount(m.GetQuery(c))
 	if err != nil {
 		g.Response(http.StatusBadRequest, util.INVALID_PARAMS, err.Error())
 		return
