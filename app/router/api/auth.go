@@ -59,6 +59,5 @@ func MineInfo(c *gin.Context) {
 		return
 	}
 	g.Response(http.StatusOK, util.SUCCESS, u)
-	return
 }
 

@@ -120,7 +120,7 @@ func (m *User) GetCount(maps interface{}) (count int, err error) {
 }
 
 // 判断某条数据是否存在
-func (m *User) Exist(exist bool, err error) {
+func (m *User) Exist() (exist bool, err error) {
 	err = db.Select("id").Where("id = ? AND deleted_at is null", m.ID).First(m).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return

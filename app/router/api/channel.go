@@ -10,11 +10,10 @@ import (
 	"github.com/wangle201210/goCms/app/util"
 )
 
-type tm = model.Channel
 // 增
 func AddChannel(c *gin.Context) {
 	g := util.Gin{C: c}
-	m := &tm{}
+	m := &model.Channel{}
 	if err := c.ShouldBind(m); err != nil {
 		g.Response(http.StatusBadRequest, util.INVALID_PARAMS, err.Error())
 		return
@@ -24,13 +23,12 @@ func AddChannel(c *gin.Context) {
 		return
 	}
 	g.Response(http.StatusOK, util.SUCCESS, nil)
-	return
 }
 
 // 删
 func DeleteChannel(c *gin.Context)  {
 	g := util.Gin{C: c}
-	m := &tm{}
+	m := &model.Channel{}
 	if !util.IsAdmin(c) {
 		g.Response(http.StatusBadRequest, util.ERROR_AUTH_PERMISSION,nil)
 		return
@@ -51,7 +49,7 @@ func DeleteChannel(c *gin.Context)  {
 
 // 改
 func EditChannel(c *gin.Context)  {
-	m := &tm{}
+	m := &model.Channel{}
 	g := util.Gin{C: c}
 	s := c.Param("id")
 	id, _ := strconv.Atoi(s)
@@ -68,7 +66,7 @@ func EditChannel(c *gin.Context)  {
 }
 
 func GetChannelById(c *gin.Context) {
-	m := &tm{}
+	m := &model.Channel{}
 	g := util.Gin{C: c}
 	s := c.Param("id")
 	id, _ := strconv.Atoi(s)
@@ -78,7 +76,6 @@ func GetChannelById(c *gin.Context) {
 		return
 	}
 	g.Response(http.StatusOK, util.SUCCESS, m)
-	return
 }
 
 func GetChannelPage(c *gin.Context) {
@@ -87,7 +84,7 @@ func GetChannelPage(c *gin.Context) {
 		err  error
 		g    util.Gin
 	)
-	m := &tm{}
+	m := &model.Channel{}
 	g.C = c
 	pageNum, exist := c.GetQuery("pageNum")
 
@@ -115,11 +112,10 @@ func GetChannelPage(c *gin.Context) {
 		"total": total,
 	}
 	g.Response(http.StatusOK, util.SUCCESS, res)
-	return
 }
 
 func GetChannelTree(c *gin.Context) {
-	m := &tm{}
+	m := &model.Channel{}
 	g := util.Gin{C: c}
 
 	all, err := m.GetAll()
