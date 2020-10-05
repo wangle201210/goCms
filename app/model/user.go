@@ -43,21 +43,21 @@ func (m *User) GetQuery(c *gin.Context) (qm map[string]interface{}) {
 }
 
 // 获取json中允许被修改（新增）的字段
-func (m *User) GetPost(c *gin.Context) (pm gin.H) {
-	post := []string{
-		"name",
-		"role",
-		"email",
-		"password",
-	}
-	res := make(gin.H)
-	for _, q := range post {
-		if v, e := c.GetPostForm(q); e {
-			res[q] = v
-		}
-	}
-	return res
-}
+//func (m *User) GetPost(c *gin.Context) (pm map[string]interface{}) {
+//	post := []string{
+//		"name",
+//		"role",
+//		"email",
+//		"password",
+//	}
+//	res := make(map[string]interface{})
+//	for _, q := range post {
+//		if v, e := c.GetPostForm(q); e {
+//			res[q] = v
+//		}
+//	}
+//	return res
+//}
 
 // 增
 // todo name 唯一性

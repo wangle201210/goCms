@@ -20,11 +20,25 @@ func Start() *gin.Engine {
 	{
 		// 获取当前登录用户信息
 		apiRouter.GET("/mine", api.MineInfo)
-		userRouter := apiRouter.Group("/user")
+		// gin 的路由没有覆盖机制，所以只能把路由加长
+		// user	相关路由
+		userApi := apiRouter.Group("/user")
 		{
-			userRouter.GET("/show/:id", api.GetUserById)
-			userRouter.GET("/list", api.GetUserPage)
-			userRouter.POST("/add", api.AddUser)
+			userApi.POST("/add", api.AddUser) // 增
+			userApi.DELETE("/delete/:id", api.DeleteUser) // 删
+			userApi.PUT("/edit/:id", api.EditUser) // 改
+			userApi.GET("/list", api.GetUserPage) // 列表
+			userApi.GET("/one/:id", api.GetUserById) // id查
+		}
+		// 栏目相关
+		channelApi := apiRouter.Group("/channel")
+		{
+			channelApi.POST("/add", api.AddChannel)
+			channelApi.DELETE("/delete/:id", api.DeleteChannel)
+			channelApi.PUT("/edit/:id", api.EditChannel)
+			channelApi.GET("/list", api.GetChannelPage)
+			channelApi.GET("/tree", api.GetChannelTree)
+			channelApi.GET("/one/:id", api.GetChannelById)
 		}
 
 	}
