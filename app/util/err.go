@@ -20,6 +20,10 @@ const (
 	ERROR_AUTH_NOUSER              = 20005
 	ERROR_AUTH_PASSWORD            = 20006
 	ERROR_AUTH_PERMISSION          = 20007
+
+	ERROR_UPLOAD_SAVE_IMAGE_FAIL = 30001
+	ERROR_UPLOAD_CHECK_IMAGE_FAIL =  30002
+	ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
 )
 
 var MsgFlags = map[int]string{
@@ -42,6 +46,10 @@ var MsgFlags = map[int]string{
 	ERROR_AUTH_NOUSER:              "查无此人",
 	ERROR_AUTH_PASSWORD:            "账号或密码错误",
 	ERROR_AUTH_PERMISSION:          "权限不足",
+
+	ERROR_UPLOAD_SAVE_IMAGE_FAIL:    "保存图片失败",
+	ERROR_UPLOAD_CHECK_IMAGE_FAIL:   "检查图片失败",
+	ERROR_UPLOAD_CHECK_IMAGE_FORMAT: "校验图片错误，图片格式或大小有问题",
 }
 
 func ErrMsg(code int) (err string) {

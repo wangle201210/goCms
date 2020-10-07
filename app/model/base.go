@@ -49,7 +49,7 @@ func init() {
 
 // 自动迁移
 func createTables() {
-	db.AutoMigrate(&User{}, &Article{}, &Channel{})
+	db.AutoMigrate(&User{}, &Article{}, &Channel{}, &Album{},&Linker{},&List{},&Media{})
 }
 
 //

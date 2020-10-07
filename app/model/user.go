@@ -13,10 +13,14 @@ import (
 type User struct {
 	Base
 
-	Name     string `json:"name" gorm:"not null;unique"` // 非空且唯一
-	Password string `json:"password"`
-	Role     int    `json:"role"`
-	Email    string `json:"email"`
+	Name         string `json:"name" gorm:"not null;unique"` // 非空且唯一
+	Password     string `json:"password"`
+	Role         int    `json:"role"`
+	Email        string `json:"email"`
+	Avatar       string `json:"avatar"`
+	Introduction string `json:"introduction"`
+
+	Roles []string `json:"roles" gorm:"-"`
 }
 
 var RoleList = []string{
@@ -62,7 +66,7 @@ func (m *User) GetQuery(c *gin.Context) (qm map[string]interface{}) {
 // 增
 // todo name 唯一性
 func (m *User) Add() (err error) {
-	if err = m.GetByName(); err != nil {
+	if err = m.GetByName(); err != nil && err != gorm.ErrRecordNotFound {
 		return
 	} else if m.ID > 0 {
 		err = errors.New(util.ErrMsg(util.ERROR_USER_NAME_USED))
@@ -138,11 +142,19 @@ func initData() {
 	if err == gorm.ErrRecordNotFound {
 		user.Name = "admin"
 		user.Email = "iwangle.me@gmail.com"
+		user.Avatar = "https://golang.google.cn/lib/godoc/images/home-gopher.png"
+		user.Introduction = "I am wanna"
 		user.Role = 1
 		user.Password = util.EncodeMD5("password")
-		err = user.Add()
+		if e := user.Add(); e != nil {
+			logs.Error("user err: %s", e.Error())
+		}
+	} else {
+		logs.Error("query err: %s", err.Error())
 	}
-	if err != nil {
-		logs.Error("query err: %s", err)
-	}
+}
+
+func (m *User) AfterFind() (err error) {
+	m.Roles = append(m.Roles, RoleList[m.Role])
+	return
 }
