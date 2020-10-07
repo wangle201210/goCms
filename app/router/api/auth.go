@@ -61,3 +61,8 @@ func MineInfo(c *gin.Context) {
 	g.Response(http.StatusOK, util.SUCCESS, u)
 }
 
+// todo 退出时考虑要不要处理什么逻辑
+func Logout(c *gin.Context) {
+	g := util.Gin{C: c}
+	g.Response(http.StatusOK, util.SUCCESS, nil)
+}

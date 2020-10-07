@@ -1,6 +1,7 @@
 package util
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/astaxie/beego/pkg/infrastructure/logs"
@@ -8,18 +9,24 @@ import (
 )
 
 type App struct {
-	PageSize   int
-	ExpireTime int
-	Name       string
-	Md5String  string
-	JwtSecret  string
-	TimeFormat string
+	PageSize       int
+	ExpireTime     int
+	Name           string
+	Md5String      string
+	JwtSecret      string
+	TimeFormat     string
+	ImagePrefixUrl string
+	ImageSavePath  string
+	FileUploadPath string
+	ImageMaxSize   int
+	ImageAllowExts []string
 }
 
 var AppSetting = &App{}
 
 type Server struct {
 	RunMode      string
+	Host         string
 	HttpPort     int
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
@@ -59,4 +66,7 @@ func init() {
 	mapTo("app", AppSetting)
 	mapTo("database", DatabaseSetting)
 	mapTo("server", ServerSetting)
+
+	AppSetting.ImageMaxSize *= 1 << 20
+	AppSetting.ImagePrefixUrl = ServerSetting.Host + ":" + strconv.Itoa(ServerSetting.HttpPort)
 }

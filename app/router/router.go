@@ -2,24 +2,33 @@ package router
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/wangle201210/goCms/app/middleware"
 	"github.com/wangle201210/goCms/app/router/api"
 	"github.com/wangle201210/goCms/app/util"
+	"github.com/wangle201210/goCms/app/util/upload"
 )
 
 func Start() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(middleware.CORS())
+	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
+
 	apiRouter := r.Group("/api")
 	apiRouter.POST("/token", api.GetAuth)
 	apiRouter.Use(middleware.AUTH())
 	{
+		apiRouter.POST("/logout", api.Logout)
+
 		// 获取当前登录用户信息
 		apiRouter.GET("/mine", api.MineInfo)
+		// 图片上传
+		apiRouter.POST("/upload/image", api.UploadImage)
 
 		// gin 的路由没有覆盖机制，所以只能把路由加长
 		// user	相关路由

@@ -7,30 +7,27 @@ import (
 	"github.com/wangle201210/goCms/app/util"
 )
 
-type Album struct {
+// todo 媒体文件管理
+type Media struct {
 	Base
 
-	ChannelID   int    `json:"channel_id" gorm:"index"`
-	Title       string `json:"title"`
-	Keyword     string `json:"keyword"`
-	Description string `json:"description"`
-	Org         string `json:"org"`
-	Small       string `json:"small"`
-	Count       string `json:"count"`
-	Ordering    string `json:"ordering"`
-
-	Channel *Channel `json:"channel" gorm:"-"`
+	OrgName   string `json:"org_name"`
+	FileName  string `json:"file_name"`
+	FilePath  string `json:"file_path"`
+	Size      int    `json:"size"`
+	ModelType string `json:"model_type"`
+	ModelId   int    `json:"model_id"`
 }
 
 // 获取路由中允许被查询的字段
-func (m *Album) GetQuery(c *gin.Context) (qm map[string]interface{}) {
+func (m *Media) GetQuery(c *gin.Context) (qm map[string]interface{}) {
 	query := []string{
 		"id",
-		"title",
-		"keyword",
-		"org",
-		"small",
-		"channel_id",
+		"OrgName",
+		"file_name",
+		"file_path",
+		"model_type",
+		"model_id",
 	}
 	res := make(map[string]interface{})
 	for _, q := range query {
@@ -42,22 +39,22 @@ func (m *Album) GetQuery(c *gin.Context) (qm map[string]interface{}) {
 }
 
 // 增
-func (m *Album) Add() (err error) {
+func (m *Media) Add() (err error) {
 	return db.Create(m).Error
 }
 
 // 删
-func (m *Album) Delete() (err error) {
+func (m *Media) Delete() (err error) {
 	return db.Delete(m).Error
 }
 
 // 改
-func (m *Album) Edit(id int, data interface{}) (err error) {
+func (m *Media) Edit(id int, data interface{}) (err error) {
 	return db.Model(m).Where("id = ? and deleted_at is null", id).Updates(data).Error
 }
 
 // 通过id查找数据
-func (m *Album) GetById() (err error) {
+func (m *Media) GetById() (err error) {
 	err = db.Model(m).Where("id = ? and deleted_at is null", m.ID).First(&m).Error
 	if err != nil {
 		return err
@@ -66,7 +63,7 @@ func (m *Album) GetById() (err error) {
 }
 
 // 分页数据
-func (m *Album) GetPage(pageNum, maps interface{}) (data []*Album, err error) {
+func (m *Media) GetPage(pageNum, maps interface{}) (data []*Media, err error) {
 	err = db.Model(m).Where(maps).Offset(pageNum).Limit(util.AppSetting.PageSize).Find(&data).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -75,7 +72,7 @@ func (m *Album) GetPage(pageNum, maps interface{}) (data []*Album, err error) {
 }
 
 // 获取总条数
-func (m *Album) GetCount(maps interface{}) (count int, err error) {
+func (m *Media) GetCount(maps interface{}) (count int, err error) {
 	if err := db.Model(m).Where(maps).Count(&count).Error; err != nil {
 		return 0, err
 	}
@@ -83,7 +80,7 @@ func (m *Album) GetCount(maps interface{}) (count int, err error) {
 }
 
 // 判断某条数据是否存在
-func (m *Album) Exist() (exist bool, err error) {
+func (m *Media) Exist() (exist bool, err error) {
 	err = db.Select("id").Where("id = ? AND deleted_at is null", m.ID).First(m).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return
