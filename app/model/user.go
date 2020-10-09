@@ -82,6 +82,7 @@ func (m *User) Delete() (err error) {
 }
 
 // 改
+// todo 密码修改的验证
 func (m *User) Edit(id int, data interface{}) (err error) {
 	// Update 一次只能更新一个字段
 	// Updates 可以通过map更新多个字段
@@ -139,7 +140,7 @@ func (m *User) Exist() (exist bool, err error) {
 func initData() {
 	user := &User{}
 	err := db.First(&user).Error
-	if err == gorm.ErrRecordNotFound {
+	if err != nil && err == gorm.ErrRecordNotFound {
 		user.Name = "admin"
 		user.Email = "iwangle.me@gmail.com"
 		user.Avatar = "https://golang.google.cn/lib/godoc/images/home-gopher.png"
@@ -149,8 +150,6 @@ func initData() {
 		if e := user.Add(); e != nil {
 			logs.Error("user err: %s", e.Error())
 		}
-	} else {
-		logs.Error("query err: %s", err.Error())
 	}
 }
 

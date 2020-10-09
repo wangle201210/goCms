@@ -40,6 +40,10 @@ func DeleteUser(c *gin.Context)  {
 		g.Response(http.StatusBadRequest, util.INVALID_PARAMS,"id 必须为数字")
 		return
 	}
+	if util.Mine(c).Id == id {
+		g.Response(http.StatusBadRequest, util.INVALID_PARAMS,"不可删除自身账号")
+		return
+	}
 	u.ID = id
 	if err := u.Delete(); err != nil {
 		g.Response(http.StatusBadRequest, util.ERROR_DATA_DELETE,err.Error())
@@ -60,6 +64,9 @@ func EditUser(c *gin.Context)  {
 		return
 	}
 	u.ID = id
+	if u.Password != "" {
+		u.Password = util.EncodeMD5(u.Password)
+	}
 	if err := u.Edit(u.ID, u); err != nil {
 		g.Response(http.StatusBadRequest,util.ERROR_DATA_EDIT,err.Error())
 		return
