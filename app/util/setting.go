@@ -68,5 +68,5 @@ func init() {
 	mapTo("server", ServerSetting)
 
 	AppSetting.ImageMaxSize *= 1 << 20
-	AppSetting.ImagePrefixUrl = ServerSetting.Host + ":" + strconv.Itoa(ServerSetting.HttpPort)
+	AppSetting.ImagePrefixUrl = "http://" + ServerSetting.Host + ":" + strconv.Itoa(ServerSetting.HttpPort)
 }
